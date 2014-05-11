@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- This is an XML file -->
+  <!--! This is an XML file 
+    line 2 -->
+  <!--? This is an XML file-->
+  <!--x This is an XML file -->
+  <!--  what !?
+  Multi line comment
+  
+  -->
+  <!--TODO: WAT-->
+</root>
