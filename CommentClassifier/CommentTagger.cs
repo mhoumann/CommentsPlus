@@ -97,16 +97,16 @@ namespace CommentsPlus.CommentClassifier
         public IEnumerable<ITagSpan<ClassificationTag>> GetTags(NormalizedSnapshotSpanCollection spans)
         {
 #if DIAG_TIMING
-			var sw = Stopwatch.StartNew();
+      var sw = Stopwatch.StartNew();
 
-			//ToList seems to perform better than returning the iterator
-			var tags = GetTagsInternal(spans).AsList();
+      //ToList seems to perform better than returning the iterator
+      var tags = GetTagsInternal(spans).AsList();
 
-			sw.Stop();
-			if (sw.Elapsed > TimeSpan.FromMilliseconds(1))
-				Trace.WriteLine("GetTags took: " + sw.Elapsed, "CommentsPlus");
+      sw.Stop();
+      if (sw.Elapsed > TimeSpan.FromMilliseconds(1))
+        Trace.WriteLine("GetTags took: " + sw.Elapsed, "CommentsPlus");
 
-			return tags;
+      return tags;
 #else
             return GetTagsInternal(spans);
 #endif

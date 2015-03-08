@@ -69,7 +69,7 @@ namespace CommentsPlus.CommentClassifier
         public static readonly Color QuestionColor = Colors.Red;
         public static readonly Color WtfColor = Colors.Purple;
         public static readonly Color RemovedColor = Colors.Gray;
-        public static readonly Color TaskColor = Color.FromRgb(0, 180, 0);
+        public static readonly Color TaskColor = Color.FromRgb(192, 96, 0);
     }
 
     public static class ClassificationDefinitions
@@ -110,7 +110,7 @@ namespace CommentsPlus.CommentClassifier
         [BaseDefinition("HTML Comment")]
         [Name(Constants.QuestionHtmlComment)]
         internal static ClassificationTypeDefinition QuestionHtmlCommentClassificationType = null;
-        
+
         [Export(typeof(ClassificationTypeDefinition))]
         [BaseDefinition("HTML Comment")]
         [Name(Constants.RemovedHtmlComment)]

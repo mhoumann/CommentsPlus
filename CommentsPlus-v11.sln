@@ -1,9 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.30501.0
-MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommentsPlus", "CommentsPlus.csproj", "{32E82793-0D5E-4EF7-8344-FF9FD80F678F}"
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommentsPlus-v11", "CommentsPlus-v11.csproj", "{32E82793-0D5E-4EF7-8344-FF9FD80F678F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
