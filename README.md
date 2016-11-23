@@ -14,7 +14,9 @@ Special Comments:
 //! Important - formatted as bold.
 //? Question - colored red.
 //x Removed - formatted as strikeout.
-//TODO: Task - colored light green.
+//TODO: Task - colored dark orange.
+//TODO@NN: Task for NN - colored dark orange - case insensitive
+//HACK: Task - colored dark orange.
 //!? WT*!? - colored purple.
 ```
 
