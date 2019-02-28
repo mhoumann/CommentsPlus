@@ -23,9 +23,9 @@ Special Comments:
 Supported File Types
 --------------------
 
-Should work with all VS supported source code file types.
+Should work with all or most VS supported source code file types.
 
-Tested with: .cs, .vb, .h/.cpp, .py, .js, .ps1, .html, .xml, .xaml,
+Tested with: .cs, .vb, .h/.cpp, .py, .js, .ts, .ps1, .html, .xml, .xaml,
 
 Settings
 --------

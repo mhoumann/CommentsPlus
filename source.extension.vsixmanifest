@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="MGH.CommentsPlus.a6539c2f-6785-4586-8028-ad923b47224d" Version="1.8.1" Language="en-US" Publisher="Mads Houmann" />
+        <Identity Id="MGH.CommentsPlus.a6539c2f-6785-4586-8028-ad923b47224d" Version="1.8.2" Language="en-US" Publisher="Mads Houmann" />
         <DisplayName>CommentsPlus</DisplayName>
         <Description xml:space="preserve">Comments in italics, extra formatting for comments starting with: !, ?, x, e.g., //!</Description>
         <License>ms-pl.txt</License>
@@ -25,6 +25,6 @@
         <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%|" />
     </Assets>
     <Prerequisites>
-        <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[15.0,17.0)" DisplayName="Visual Studio core editor" />
+        <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[15.0,)" DisplayName="Visual Studio core editor" />
     </Prerequisites>
 </PackageManifest>

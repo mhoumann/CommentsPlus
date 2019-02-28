@@ -1,0 +1,18 @@
+﻿<!--! This is a XAML file -->
+<Page 
+  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  x:Class="ExampleNamespace.ExamplePage">
+<Button>
+  <Button.Background>
+    <SolidColorBrush Color="Blue"/>
+  </Button.Background>
+  <Button.Foreground>
+    <SolidColorBrush Color="Red"/>
+  </Button.Foreground>
+  <!--x This is a XAML file -->
+  <Button.Content>
+    This is a button
+  </Button.Content>
+</Button>
+</Page>

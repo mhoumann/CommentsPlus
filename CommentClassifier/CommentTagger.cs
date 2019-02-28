@@ -132,6 +132,7 @@ namespace CommentsPlus.CommentClassifier
 
             List<ITagSpan<ClassificationTag>> resultTags = null;
 
+            string previousCommentType = null;
             foreach (var tagSpan in _aggregator.GetTags(spans))
             {
                 // find spans that the language service has already classified as comments ...
@@ -149,15 +150,25 @@ namespace CommentsPlus.CommentClassifier
                     if (String.IsNullOrWhiteSpace(text))
                         continue;
 
-                    //NOTE: markup comment span does not include comment start token
+                    string startCommentOnlyType = text.EqualsOneOf(Comments);
+                    if (startCommentOnlyType != null)
+                    {
+                        previousCommentType = startCommentOnlyType;
+                        continue;
+                    }
+
+                    //NOTE: markup comment span does not include comment start token(s)
+                    //NOTE: .js comment span has changed to noy include comment start token(s)
                     string commentType = text.StartsWithOneOf(Comments);
                     if (commentType == null)
                     {
-                        if (!isMarkup)
+                        if (!isMarkup && previousCommentType == null)
                             continue;
 
                         commentType = "";
                     }
+
+                    previousCommentType = null;
 
                     int startIndex = commentType.Length;
 
@@ -199,7 +210,7 @@ namespace CommentsPlus.CommentClassifier
                         //¤     removedSpanLength = text.Length - (startIndex + match.Length + len);
                         //¤ }
                     }
-                    else if (Match(text, startIndex, TaskComments, StringComparison.OrdinalIgnoreCase, out match))
+                    else if (Match(text, startIndex, TaskComments, StringComparison.OrdinalIgnoreCase, true, out match))
                     {
                         bool fix = FixTaskComment(text, startIndex, ref match);
                         ctag = lookup[Classification.Task];
@@ -247,12 +258,25 @@ namespace CommentsPlus.CommentClassifier
 
         static bool Match(string commentText, int startIndex, string[] templates, out string match)
         {
-            return Match(commentText, startIndex, templates, StringComparison.Ordinal, out match);
+            return Match(commentText, startIndex, templates, StringComparison.Ordinal, false, out match);
         }
 
         static bool Match(string commentText, int startIndex, string[] templates, StringComparison comparison, out string match)
         {
+            return Match(commentText, startIndex, templates, comparison, false, out match);
+        }
+
+        static bool Match(string commentText, int startIndex, string[] templates, StringComparison comparison, bool allowLeadingWhiteSpace, out string match)
+        {
+            bool lws = false;
+            if (allowLeadingWhiteSpace && commentText.StartsWithWhiteSpace(startIndex))
+            {
+                lws = true;
+                startIndex += 1;
+            }
             match = commentText.StartsWithOneOf(startIndex, templates, comparison);
+            if (lws && match != null)
+                match = commentText.Substring(startIndex - 1, match.Length + 1);
             return match != null;
         }
 
@@ -344,6 +368,26 @@ namespace CommentsPlus.CommentClassifier
                     return t;
             }
 
+            return null;
+        }
+
+        public static bool StartsWithWhiteSpace(this string text, int startIndex)
+        {
+            if (String.IsNullOrEmpty(text) || startIndex >= text.Length)
+                return false;
+            return Char.IsWhiteSpace(text, startIndex);
+        }
+
+        public static string EqualsOneOf(this string text, string[] strings, StringComparison comparison = StringComparison.Ordinal)
+        {
+            if (strings == null || strings.Length == 0)
+                return null;
+
+            foreach (string t in strings)
+            {
+                if (String.Equals(text, t, comparison))
+                    return t;
+            }
             return null;
         }
     }

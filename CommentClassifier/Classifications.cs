@@ -12,17 +12,22 @@ namespace CommentsPlus.CommentClassifier
     //The quick brown fox jumps over the lazy dog
     //! Important note
     //? What's all this?
-    //TODO: Work remaining
-    //ToDo@MH: Work remaining
+    //TODO Work remaining
+    //TODO: More work remaining
+    // TODO: Even more work remaining
+    //ToDo@MH: Some work remaining for you
     //x object q = dt(42); //What is your question?
     //// double pi = Math.PI;
     //!? Wait, what‽
 
     //# Bold Test
-    //¤ Removed
+    //¤ Removed ¤
+    //x Removed x
     //WTF I don't even?
     //‽ Not in the slightest
     //HACK Hackety hack ack!
+    //HACK: Not a crack
+    // HACK: Slash!
     /////////////////////////////////////////
     ////string commentedOut = OldMethod(a++); /* an old style comment */
 

@@ -3,7 +3,7 @@
 *
 */
 //! a bold move in javascript
-//TODO: What is this ?
+//TODO: Build a new framework ?
 //!? What is this ??
 var Greeter = (function () {
     function Greeter(message) {

@@ -107,6 +107,20 @@
     <Reference Include="System.Xaml" />
     <Reference Include="WindowsBase" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Samples\Sample2.ts" />
+    <None Include="Samples\Class1.vb" />
+    <None Include="Samples\HTMLPage1.html" />
+    <None Include="Samples\python_class1.py" />
+    <None Include="Samples\samplescript.ps1" />
+    <None Include="Samples\Script2.js" />
+    <None Include="Samples\XMLFile1.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Samples\samplepage.xaml">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" Condition="'$(VSToolsPath)' != ''" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
