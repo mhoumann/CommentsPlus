@@ -94,6 +94,11 @@ namespace CommentsPlus.CommentClassifier
             return res;
         }
 
+        /// <summary>
+        /// Gets all the tags that intersect the specified spans.
+        /// </summary>
+        /// <param name="spans">The spans to visit.</param>
+        /// <returns>A TagSpan for each tag.</returns>
         public IEnumerable<ITagSpan<ClassificationTag>> GetTags(NormalizedSnapshotSpanCollection spans)
         {
 #if DIAG_TIMING
@@ -157,8 +162,8 @@ namespace CommentsPlus.CommentClassifier
                         continue;
                     }
 
-                    //NOTE: markup comment span does not include comment start token(s)
-                    //NOTE: .js comment span has changed to noy include comment start token(s)
+                    //NOTE: markup comment span does not include comment start token
+                    //NOTE: .js/.ts comment span has changed to not include comment start token
                     string commentType = text.StartsWithOneOf(Comments);
                     if (commentType == null)
                     {

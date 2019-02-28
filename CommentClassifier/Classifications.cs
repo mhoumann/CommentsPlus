@@ -51,24 +51,24 @@ namespace CommentsPlus.CommentClassifier
     static class Constants
     {
         //! Important
-        public const String ImportantComment = "Comment - Important";
-        public const String ImportantHtmlComment = "HTML Comment - Important";
-        public const String ImportantXmlComment = "XML Comment - Important";
+        public const string ImportantComment = "Comment - Important";
+        public const string ImportantHtmlComment = "HTML Comment - Important";
+        public const string ImportantXmlComment = "XML Comment - Important";
         //? Question
-        public const String QuestionComment = "Comment - Question";
-        public const String QuestionHtmlComment = "HTML Comment - Question";
-        public const String QuestionXmlComment = "XML Comment - Question";
-        //!? WTF
-        public const String WtfComment = "Comment - WAT!?";
+        public const string QuestionComment = "Comment - Question";
+        public const string QuestionHtmlComment = "HTML Comment - Question";
+        public const string QuestionXmlComment = "XML Comment - Question";
+        //!? WAT
+        public const string WtfComment = "Comment - WAT!?";
 
         //x Removed
-        public const String RemovedComment = "Comment - Removed";
-        public const String RemovedHtmlComment = "HTML Comment - Removed";
-        public const String RemovedXmlComment = "XML Comment - Removed";
+        public const string RemovedComment = "Comment - Removed";
+        public const string RemovedHtmlComment = "HTML Comment - Removed";
+        public const string RemovedXmlComment = "XML Comment - Removed";
         //TODO: This does not need work
-        public const String TaskComment = "Comment - Task";
-        public const String TaskHtmlComment = "HTML Comment - Task";
-        public const String TaskXmlComment = "XML Comment - Task";
+        public const string TaskComment = "Comment - Task";
+        public const string TaskHtmlComment = "HTML Comment - Task";
+        public const string TaskXmlComment = "XML Comment - Task";
 
         public static readonly Color ImportantColor = Colors.Green;
         public static readonly Color QuestionColor = Colors.Red;
