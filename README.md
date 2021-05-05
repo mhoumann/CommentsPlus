@@ -7,6 +7,8 @@ By Mads Houmann
 
 Based in part on code by Noah Richards and Tomas Restrepo.
 
+![Sample](cp-screenshot-white.png)
+
 Special Comments:
 -----------------
 
