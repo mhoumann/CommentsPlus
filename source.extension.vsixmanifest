@@ -6,7 +6,7 @@
         <Description xml:space="preserve">Comments in italics, extra formatting for comments starting with: !, ?, x, e.g., //!</Description>
         <License>ms-pl.txt</License>
         <ReleaseNotes>readme.rtf</ReleaseNotes>
-        <Icon>comments-plus-icon.png</Icon>
+        <Icon>comments-plus-t-icon.png</Icon>
         <PreviewImage>comments-plus-screenshot.png</PreviewImage>
         <Tags>Comments, Formatting, Italics</Tags>
     </Metadata>
