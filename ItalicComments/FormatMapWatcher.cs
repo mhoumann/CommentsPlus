@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 using Microsoft.VisualStudio.Text.Classification;
 using Microsoft.VisualStudio.Text.Editor;
 
@@ -94,20 +92,27 @@ namespace CommentsPlus.ItalicComments
                 // First, go through the ones we know about:
 
                 // 1) Known comment types are italicized
-                foreach (var type in CommentTypes.Select(t => _typeRegistry.GetClassificationType(t)).Where(t => t != null))
+                foreach (string ct in CommentTypes)
                 {
-                    Italicize(type);
+                    var type = _typeRegistry.GetClassificationType(ct);
+                    if (type != null)
+                        Italicize(type);
                 }
 
                 // 2) Known doc tags
-                foreach (var type in DocTagTypes.Select(t => _typeRegistry.GetClassificationType(t)).Where(t => t != null))
+                foreach (string ct in DocTagTypes)
                 {
-                    Italicize(type);
+                    var type = _typeRegistry.GetClassificationType(ct);
+                    if (type != null)
+                        Italicize(type);
                 }
 
                 // 3) Grab everything else that looks like a comment or doc tag
-                foreach (var classification in _formatMap.CurrentPriorityOrder.Where(c => c != null))
+                foreach (IClassificationType classification in _formatMap.CurrentPriorityOrder)
                 {
+                    if (classification == null)
+                        continue;
+
                     string name = classification.Classification;
                     var comparer = StringComparer.OrdinalIgnoreCase;
                     if (CommentTypes.Contains(name, comparer) || DocTagTypes.Contains(name, comparer))

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
 using System.Linq;
+
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Classification;
 using Microsoft.VisualStudio.Text.Editor;
@@ -45,9 +46,10 @@ namespace CommentsPlus.CommentClassifier
 
         static readonly string[] ImportantComments = { "! ", "# " }; // #! Shebang not really useful in Python and the like since it already has a meaning!?
         static readonly string[] QuestionComments = { "? " };
-        static readonly string[] WtfComments = { "!? ", "‽ ", "WTF ", "WTF: "/*, "WAT ", "WAT: "*/ };
+        static readonly string[] WtfComments = { "!? ", "‽ ", "WTF ", "WTF: "/*, "WAT ", "WAT: "*/ }; //ಠ_ಠ
         static readonly string[] RemovedComments = { "x ", "¤ ", "// ", "//" };
-        static readonly string[] TaskComments = { "TODO ", "TODO:", "TODO@", "HACK ", "HACK:" };
+        static readonly string[] TaskComments = { "TODO ", "TODO:", "TODO@", "HACK ", "HACK:" }; 
+        static readonly string[] RainbowComments = { "+? " }; //シ  
 
         static readonly List<ITagSpan<ClassificationTag>> EmptyTags = new List<ITagSpan<ClassificationTag>>();
 
@@ -57,7 +59,7 @@ namespace CommentsPlus.CommentClassifier
 
         internal CommentTagger(IClassificationTypeRegistryService registry, ITagAggregator<IClassificationTag> aggregator)
         {
-            _classifications = new string[] { Constants.ImportantComment, Constants.QuestionComment, Constants.WtfComment, Constants.RemovedComment, Constants.TaskComment }
+            _classifications = new string[] { Constants.ImportantComment, Constants.QuestionComment, Constants.WtfComment, Constants.RemovedComment, Constants.TaskComment, Constants.RainbowComment }
                     .ToDictionary(GetClassification, s => new ClassificationTag(registry.GetClassificationType(s)));
 
             _htmlClassifications = new string[] { Constants.ImportantHtmlComment, Constants.QuestionHtmlComment, Constants.WtfComment, Constants.RemovedHtmlComment, Constants.TaskHtmlComment }
@@ -224,6 +226,10 @@ namespace CommentsPlus.CommentClassifier
                     {
                         ctag = lookup[Classification.Wtf];
                     }
+                    else if (Match(text, startIndex, RainbowComments, out match))
+                    {
+                        ctag = lookup[Classification.Rainbow];
+                    }
 
                     if (ctag != null)
                     {
@@ -266,11 +272,6 @@ namespace CommentsPlus.CommentClassifier
             return Match(commentText, startIndex, templates, StringComparison.Ordinal, false, out match);
         }
 
-        static bool Match(string commentText, int startIndex, string[] templates, StringComparison comparison, out string match)
-        {
-            return Match(commentText, startIndex, templates, comparison, false, out match);
-        }
-
         static bool Match(string commentText, int startIndex, string[] templates, StringComparison comparison, bool allowLeadingWhiteSpace, out string match)
         {
             bool lws = false;
@@ -297,6 +298,8 @@ namespace CommentsPlus.CommentClassifier
                 return Classification.Task;
             if (s.Contains("WAT"))
                 return Classification.Wtf;
+            if (s.Contains("Rainbow"))
+                return Classification.Rainbow;
 
             throw new ArgumentException("Unknown classification type");
         }
@@ -318,82 +321,6 @@ namespace CommentsPlus.CommentClassifier
         {
             bool res = contentType.IsOfType("XAML") || contentType.IsOfType("XML");
             return res;
-        }
-    }
-
-    static class ExtensionMethods
-    {
-        public static List<T> AsList<T>(this IEnumerable<T> source)
-        {
-            var list = source as List<T>;
-            if (list != null)
-                return list;
-            return source.ToList();
-        }
-
-        public static bool Contains(this string text, string value, StringComparison comparison)
-        {
-            if (String.IsNullOrEmpty(text) || String.IsNullOrEmpty(value))
-                return false;
-
-            int index = text.IndexOf(value, comparison);
-            return index >= 0;
-        }
-
-        public static bool StartsWith(this string text, string value, int startIndex, StringComparison comparison = StringComparison.Ordinal)
-        {
-            if (String.IsNullOrEmpty(text) || startIndex > text.Length || String.IsNullOrEmpty(value))
-                return false;
-
-            return text.IndexOf(value, startIndex, comparison) == startIndex;
-        }
-
-        public static string StartsWithOneOf(this string text, string[] strings, StringComparison comparison = StringComparison.Ordinal)
-        {
-            if (String.IsNullOrEmpty(text) || strings == null || strings.Length == 0)
-                return null;
-
-            foreach (string t in strings)
-            {
-                if (text.StartsWith(t, comparison))
-                    return t;
-            }
-
-            return null;
-        }
-
-        public static string StartsWithOneOf(this string text, int startIndex, string[] strings, StringComparison comparison = StringComparison.Ordinal)
-        {
-            if (String.IsNullOrEmpty(text) || strings == null || strings.Length == 0)
-                return null;
-
-            foreach (string t in strings)
-            {
-                if (text.StartsWith(t, startIndex, comparison))
-                    return t;
-            }
-
-            return null;
-        }
-
-        public static bool StartsWithWhiteSpace(this string text, int startIndex)
-        {
-            if (String.IsNullOrEmpty(text) || startIndex >= text.Length)
-                return false;
-            return Char.IsWhiteSpace(text, startIndex);
-        }
-
-        public static string EqualsOneOf(this string text, string[] strings, StringComparison comparison = StringComparison.Ordinal)
-        {
-            if (strings == null || strings.Length == 0)
-                return null;
-
-            foreach (string t in strings)
-            {
-                if (String.Equals(text, t, comparison))
-                    return t;
-            }
-            return null;
         }
     }
 }

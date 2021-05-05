@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Linq;
-using System.Text;
 using System.Windows.Media;
+
 using Microsoft.VisualStudio.Text.Classification;
 using Microsoft.VisualStudio.Utilities;
 
@@ -38,6 +37,8 @@ namespace CommentsPlus.CommentClassifier
      * Another line
    */
 
+    //+? The quick brown fox jumps over the lazy dog! 0123456789 AbBbCcDdEeFf Jackdaws love my big sphinx of quartz.
+
     enum Classification
     {
         None,
@@ -45,7 +46,8 @@ namespace CommentsPlus.CommentClassifier
         Question,
         Wtf,
         Removed,
-        Task
+        Task,
+        Rainbow
     }
 
     /*!? Normal comment - should be italics '*/
@@ -70,6 +72,11 @@ namespace CommentsPlus.CommentClassifier
         public const string TaskComment = "Comment - Task";
         public const string TaskHtmlComment = "HTML Comment - Task";
         public const string TaskXmlComment = "XML Comment - Task";
+
+        public const string RainbowComment = "Comment - Rainbow";
+
+        //x public const string LargeComment = "Comment + Large";
+        //x public const string LargerComment = "Comment ++ Large";
 
         public static readonly Color ImportantColor = Colors.Green;
         public static readonly Color QuestionColor = Colors.Red;
@@ -104,6 +111,11 @@ namespace CommentsPlus.CommentClassifier
         [BaseDefinition("Comment")]
         [Name(Constants.TaskComment)]
         internal static ClassificationTypeDefinition TaskCommentClassificationType = null;
+
+        [Export(typeof(ClassificationTypeDefinition))]
+        [BaseDefinition("Comment")]
+        [Name(Constants.RainbowComment)]
+        internal static ClassificationTypeDefinition RainbowCommentClassificationType = null;
 
         #region HTML
 
@@ -223,6 +235,29 @@ namespace CommentsPlus.CommentClassifier
         {
             this.DisplayName = Constants.TaskComment + " (//TODO)";
             this.ForegroundColor = Constants.TaskColor;
+        }
+    }
+
+    [Export(typeof(EditorFormatDefinition))]
+    [ClassificationType(ClassificationTypeNames = Constants.RainbowComment)]
+    [Name(Constants.RainbowComment)]
+    [UserVisible(false)]
+    [Order(After = Priority.High)]
+    public sealed class RainbowCommentFormat : ClassificationFormatDefinition
+    {
+        public RainbowCommentFormat()
+        {
+            this.DisplayName = Constants.RainbowComment + " (//+?)";
+            this.ForegroundBrush = new LinearGradientBrush(new GradientStopCollection() {
+                new GradientStop(Colors.Red, 0.0),
+                new GradientStop(Colors.Orange, 0.17),
+                new GradientStop(Colors.Goldenrod, 0.33),
+                new GradientStop(Colors.Lime, 0.5),
+                new GradientStop(Colors.Blue, 0.66),
+                new GradientStop(Colors.Indigo, 0.83),
+                new GradientStop(Colors.Violet, 1.0),
+            }, 0.0);
+            this.IsBold = true;
         }
     }
 
