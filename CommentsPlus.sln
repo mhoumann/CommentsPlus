@@ -3,14 +3,20 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31205.134
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommentsPlus", "CommentsPlus.csproj", "{32E82793-0D5E-4EF7-8344-FF9FD80F678F}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{61E5FC7C-6EF0-4B4C-9569-6332FB02336D}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommentsPlus", "CommentsPlus16\CommentsPlus.csproj", "{32E82793-0D5E-4EF7-8344-FF9FD80F678F}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "CommentsPlusShared", "CommentsPlusShared.shproj", "{3E4BAC08-24C7-4C05-8683-E8109183D72B}"
+EndProject
 Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		CommentsPlusShared.projitems*{32e82793-0d5e-4ef7-8344-ff9fd80f678f}*SharedItemsImports = 4
+		CommentsPlusShared.projitems*{3e4bac08-24c7-4c05-8683-e8109183d72b}*SharedItemsImports = 13
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
