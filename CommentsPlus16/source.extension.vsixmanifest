@@ -17,6 +17,9 @@
         <InstallationTarget Version="[15.0,17.0)" Id="Microsoft.VisualStudio.IntegratedShell" />
         <InstallationTarget Version="[15.0,17.0)" Id="Microsoft.VisualStudio.Premium" />
         <InstallationTarget Version="[15.0,17.0)" Id="Microsoft.VisualStudio.Ultimate" />
+        <InstallationTarget Version="[17.0,18.0)" Id="Microsoft.VisualStudio.Community">
+            <ProductArchitecture>amd64</ProductArchitecture>
+        </InstallationTarget>
     </Installation>
     <Dependencies>
         <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" Version="[4.5,)" />
