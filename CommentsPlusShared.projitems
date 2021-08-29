@@ -16,10 +16,4 @@
     <Compile Include="$(MSBuildThisFileDirectory)ItalicComments\FormatMapWatcher.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ItalicComments\ViewCreationListener.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="$(MSBuildThisFileDirectory)Properties\" />
-    <Folder Include="$(MSBuildThisFileDirectory)CommentClassifier\" />
-    <Folder Include="$(MSBuildThisFileDirectory)ExtensionMethods\" />
-    <Folder Include="$(MSBuildThisFileDirectory)ItalicComments\" />
-  </ItemGroup>
 </Project>
