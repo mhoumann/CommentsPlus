@@ -4,3 +4,17 @@
 twins:
     - Tweedledee
     - Tweedledum
+
+queen: hearts
+
+teaparty:
+  - title: >
+      A Mad Tea-Party
+  - description: |
+      A Mad Tea-Party.
+      Mad
+  - guests: 
+    - Hatter #! mad
+    - March Hare
+    - Dormouse #x asleep
+    - Alice

@@ -21,6 +21,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{F3C5
 		Samples\samplepage.xaml = Samples\samplepage.xaml
 		Samples\samplescript.ps1 = Samples\samplescript.ps1
 		Samples\Script2.js = Samples\Script2.js
+		Samples\test.h = Samples\test.h
 		Samples\test.yml = Samples\test.yml
 		Samples\XMLFile1.xml = Samples\XMLFile1.xml
 	EndProjectSection
