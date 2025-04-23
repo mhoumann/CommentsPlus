@@ -36,7 +36,7 @@ namespace CommentsPlus
     {
         public static bool Contains(this string text, string value, StringComparison comparison)
         {
-            if (String.IsNullOrEmpty(text) || String.IsNullOrEmpty(value))
+            if (string.IsNullOrEmpty(text) || string.IsNullOrEmpty(value))
                 return false;
 
             int index = text.IndexOf(value, comparison);
@@ -45,7 +45,7 @@ namespace CommentsPlus
 
         public static bool StartsWith(this string text, string value, int startIndex, StringComparison comparison = StringComparison.Ordinal)
         {
-            if (String.IsNullOrEmpty(text) || startIndex > text.Length || String.IsNullOrEmpty(value))
+            if (string.IsNullOrEmpty(text) || startIndex > text.Length || string.IsNullOrEmpty(value))
                 return false;
 
             return text.IndexOf(value, startIndex, comparison) == startIndex;
@@ -53,7 +53,7 @@ namespace CommentsPlus
 
         public static string StartsWithOneOf(this string text, string[] strings, StringComparison comparison = StringComparison.Ordinal)
         {
-            if (String.IsNullOrEmpty(text) || strings == null || strings.Length == 0)
+            if (string.IsNullOrEmpty(text) || strings == null || strings.Length == 0)
                 return null;
 
             foreach (string t in strings)
@@ -67,7 +67,7 @@ namespace CommentsPlus
 
         public static string StartsWithOneOf(this string text, int startIndex, string[] strings, StringComparison comparison = StringComparison.Ordinal)
         {
-            if (String.IsNullOrEmpty(text) || strings == null || strings.Length == 0)
+            if (string.IsNullOrEmpty(text) || strings == null || strings.Length == 0)
                 return null;
 
             foreach (string t in strings)
@@ -81,9 +81,9 @@ namespace CommentsPlus
 
         public static bool StartsWithWhiteSpace(this string text, int startIndex)
         {
-            if (String.IsNullOrEmpty(text) || startIndex >= text.Length)
+            if (string.IsNullOrEmpty(text) || startIndex >= text.Length)
                 return false;
-            return Char.IsWhiteSpace(text, startIndex);
+            return char.IsWhiteSpace(text, startIndex);
         }
 
         public static string EqualsOneOf(this string text, string[] strings, StringComparison comparison = StringComparison.Ordinal)
@@ -93,7 +93,7 @@ namespace CommentsPlus
 
             foreach (string t in strings)
             {
-                if (String.Equals(text, t, comparison))
+                if (string.Equals(text, t, comparison))
                     return t;
             }
             return null;
