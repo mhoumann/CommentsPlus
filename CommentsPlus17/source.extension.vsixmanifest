@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="CommentsPlus17.f674b167-08a9-4d6d-b4b0-c4d28d1da73c" Version="2.11.0" Language="en-US" Publisher="mhoumann" />
-        <DisplayName>CommentsPlus17</DisplayName>
+        <Identity Id="CommentsPlus17.f674b167-08a9-4d6d-b4b0-c4d28d1da73c" Version="2.12.0" Language="en-US" Publisher="mhoumann" />
+        <DisplayName>CommentsPlus</DisplayName>
         <Description xml:space="preserve">Comments in italics, extra formatting for comments starting with: !, ?, x, e.g., //!</Description>
         <MoreInfo>https://github.com/mhoumann/CommentsPlus</MoreInfo>
         <License>ms-pl.txt</License>
