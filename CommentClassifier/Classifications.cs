@@ -178,6 +178,7 @@ namespace CommentsPlus.CommentClassifier
             this.DisplayName = Constants.ImportantComment + " (//!)";
             this.ForegroundColor = Constants.ImportantColor;
             this.IsBold = true;
+            this.IsItalic = true;
         }
     }
 
@@ -192,6 +193,7 @@ namespace CommentsPlus.CommentClassifier
         {
             this.DisplayName = Constants.QuestionComment + " (//?)";
             this.ForegroundColor = Constants.QuestionColor;
+            this.IsItalic = true;
         }
     }
 
@@ -206,6 +208,7 @@ namespace CommentsPlus.CommentClassifier
         {
             this.DisplayName = Constants.WtfComment + " (//!?)";
             this.ForegroundColor = Constants.WtfColor;
+            this.IsItalic = true;
         }
     }
 
@@ -220,6 +223,7 @@ namespace CommentsPlus.CommentClassifier
         {
             this.DisplayName = Constants.RemovedComment + " (//x)";
             this.ForegroundColor = Constants.RemovedColor;
+            this.IsItalic = true;
             this.TextDecorations = System.Windows.TextDecorations.Strikethrough;
         }
     }
@@ -235,6 +239,7 @@ namespace CommentsPlus.CommentClassifier
         {
             this.DisplayName = Constants.TaskComment + " (//TODO)";
             this.ForegroundColor = Constants.TaskColor;
+            this.IsItalic = true;
         }
     }
 
@@ -258,6 +263,7 @@ namespace CommentsPlus.CommentClassifier
                 new GradientStop(Colors.Violet, 1.0),
             }, 0.0);
             this.IsBold = true;
+            this.IsItalic = true;
         }
     }
 
@@ -275,6 +281,7 @@ namespace CommentsPlus.CommentClassifier
             this.DisplayName = Constants.ImportantHtmlComment + " (<!--!)";
             this.ForegroundColor = Constants.ImportantColor;
             this.IsBold = true;
+            this.IsItalic = true;
         }
     }
 
@@ -289,6 +296,7 @@ namespace CommentsPlus.CommentClassifier
         {
             this.DisplayName = Constants.QuestionHtmlComment + " (<!--?)";
             this.ForegroundColor = Constants.QuestionColor;
+            this.IsItalic = true;
         }
     }
 
@@ -304,6 +312,7 @@ namespace CommentsPlus.CommentClassifier
             this.DisplayName = Constants.RemovedHtmlComment + " (<!--x)";
             this.ForegroundColor = Constants.RemovedColor;
             this.TextDecorations = System.Windows.TextDecorations.Strikethrough;
+            this.IsItalic = true;
         }
     }
 
@@ -318,6 +327,7 @@ namespace CommentsPlus.CommentClassifier
         {
             this.DisplayName = Constants.TaskHtmlComment + " (<!--TODO)";
             this.ForegroundColor = Constants.TaskColor;
+            this.IsItalic = true;
         }
     }
 
@@ -337,6 +347,7 @@ namespace CommentsPlus.CommentClassifier
             this.DisplayName = Constants.ImportantXmlComment + " (<!--!)";
             this.ForegroundColor = Constants.ImportantColor;
             this.IsBold = true;
+            this.IsItalic = true;
         }
     }
 
@@ -351,6 +362,7 @@ namespace CommentsPlus.CommentClassifier
         {
             this.DisplayName = Constants.QuestionXmlComment + " (<!--?)";
             this.ForegroundColor = Constants.QuestionColor;
+            this.IsItalic = true;
         }
     }
 
@@ -366,6 +378,7 @@ namespace CommentsPlus.CommentClassifier
             this.DisplayName = Constants.RemovedXmlComment + " (<!--x)";
             this.ForegroundColor = Constants.RemovedColor;
             this.TextDecorations = System.Windows.TextDecorations.Strikethrough;
+            this.IsItalic = true;
         }
     }
 
@@ -380,6 +393,7 @@ namespace CommentsPlus.CommentClassifier
         {
             this.DisplayName = Constants.TaskXmlComment + " (<!--TODO)";
             this.ForegroundColor = Constants.TaskColor;
+            this.IsItalic = true;
         }
     }
 
