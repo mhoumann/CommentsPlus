@@ -39,7 +39,7 @@ namespace CommentsPlus.CommentClassifier
         readonly Dictionary<Classification, ClassificationTag> _htmlClassifications;
         readonly Dictionary<Classification, ClassificationTag> _xmlClassifications;
 
-        readonly IAccurateTagAggregator<IClassificationTag> _aggregator;
+        readonly ITagAggregator<IClassificationTag> _aggregator;
 
         static bool _enabled;
 
@@ -71,8 +71,7 @@ namespace CommentsPlus.CommentClassifier
             _xmlClassifications = new string[] { Constants.ImportantXmlComment, Constants.QuestionXmlComment, Constants.WtfComment, Constants.RemovedXmlComment, Constants.TaskXmlComment }
                 .ToDictionary(GetClassification, s => new ClassificationTag(registry.GetClassificationType(s)));
 
-            var aggregator = factory.CreateTagAggregator<IClassificationTag>(buffer);
-            _aggregator = aggregator as IAccurateTagAggregator<IClassificationTag>;
+            _aggregator = factory.CreateTagAggregator<IClassificationTag>(buffer);
         }
 
         static CommentTagger()
@@ -90,7 +89,7 @@ namespace CommentsPlus.CommentClassifier
         /// Gets all the tags that intersect the specified spans.
         /// </summary>
         /// <param name="spans">The spans to visit.</param>
-        /// <returns>A TagSpan for each tag.</returns>
+        /// <returns>A <see cref="Microsoft.VisualStudio.Text.Tagging.ITagSpan{T}"/> for each tag.</returns>
         public IEnumerable<ITagSpan<ClassificationTag>> GetTags(NormalizedSnapshotSpanCollection spans)
         {
 #if DIAG_TIMING
@@ -147,7 +146,12 @@ namespace CommentsPlus.CommentClassifier
             string previousCommentType = null;
 
             bool all = contentType.IsOfType("CSharp") || contentType.IsOfType("Basic");
-            var currentTagSpans = all ? _aggregator.GetAllTags(spans, cancellation ?? default) : _aggregator.GetTags(spans);
+
+            // Use IAccurateTagAggregator<T>.GetAllTags for C# and VB only - seems to have serious perf issues with some other languages (.py, .js)
+            var currentTagSpans = (all && _aggregator is IAccurateTagAggregator<IClassificationTag> accAggregator) 
+                ? accAggregator.GetAllTags(spans, cancellation ?? default) 
+                : _aggregator.GetTags(spans);
+
             foreach (var tagSpan in currentTagSpans)
             {
                 if (cancellation.HasValue && cancellation.Value.IsCancellationRequested)
