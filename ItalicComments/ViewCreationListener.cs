@@ -42,21 +42,7 @@ namespace CommentsPlus.ItalicComments
 
         static bool IsEnabled()
         {
-            bool res = true;
-
-            try
-            {
-                using (var subKey = Registry.CurrentUser.OpenSubKey("Software\\CommentsPlus", false))
-                {
-                    int value = Convert.ToInt32(subKey.GetValue("EnableItalics", 1));
-                    res = value != 0;
-                }
-            }
-            catch (Exception ex)
-            {
-                Trace.WriteLine("Failed to read registry: " + ex.Message, "CommentsPlus");
-            }
-
+            bool res = RegistryHelper.IsEnabled("EnableItalics", false);
             return res;
         }
     }

@@ -11,6 +11,7 @@
     <SolidColorBrush Color="Red"/>
   </Button.Foreground>
   <!--x This is a XAML file -->
+  <!--? WAT the xaml -->
   <Button.Content>
     This is a button
   </Button.Content>

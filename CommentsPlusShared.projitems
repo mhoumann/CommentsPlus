@@ -9,6 +9,7 @@
     <Import_RootNamespace>CommentsPlus</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)extensionmethods\RegistryHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Properties\AssemblyInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CommentClassifier\Classifications.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CommentClassifier\CommentTagger.cs" />

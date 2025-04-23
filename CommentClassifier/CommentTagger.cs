@@ -1,44 +1,45 @@
 ﻿//#define DIAG_TIMING
+//#define YIELD_TAGS
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Classification;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.Tagging;
 using Microsoft.VisualStudio.Utilities;
-using Microsoft.Win32;
 
 namespace CommentsPlus.CommentClassifier
 {
     [Export(typeof(IViewTaggerProvider))]
     [ContentType("code")]
     [TagType(typeof(ClassificationTag))]
+    [Name("CommentsPlusTagger")]
     public class CommentTaggerProvider : IViewTaggerProvider
     {
         [Import]
         internal IClassificationTypeRegistryService ClassificationRegistry = null;
 
         [Import]
-        internal IBufferTagAggregatorFactoryService Aggregator = null;
+        internal IBufferTagAggregatorFactoryService TagAggregatorFactory = null;
 
         public ITagger<T> CreateTagger<T>(ITextView textView, ITextBuffer buffer) where T : ITag
         {
-            return new CommentTagger(ClassificationRegistry,
-                 Aggregator.CreateTagAggregator<IClassificationTag>(buffer)) as ITagger<T>;
+            return new CommentTagger(ClassificationRegistry, TagAggregatorFactory, buffer) as ITagger<T>;
         }
     }
 
     class CommentTagger : ITagger<ClassificationTag>
     {
-        Dictionary<Classification, ClassificationTag> _classifications;
-        Dictionary<Classification, ClassificationTag> _htmlClassifications;
-        Dictionary<Classification, ClassificationTag> _xmlClassifications;
+        readonly Dictionary<Classification, ClassificationTag> _classifications;
+        readonly Dictionary<Classification, ClassificationTag> _htmlClassifications;
+        readonly Dictionary<Classification, ClassificationTag> _xmlClassifications;
 
-        ITagAggregator<IClassificationTag> _aggregator;
+        readonly IAccurateTagAggregator<IClassificationTag> _aggregator;
 
         static bool _enabled;
 
@@ -48,27 +49,30 @@ namespace CommentsPlus.CommentClassifier
         static readonly string[] QuestionComments = { "? " };
         static readonly string[] WtfComments = { "!? ", "‽ ", "WTF ", "WTF: "/*, "WAT ", "WAT: "*/ }; //ಠ_ಠ
         static readonly string[] RemovedComments = { "x ", "¤ ", "// ", "//" };
-        static readonly string[] TaskComments = { "TODO ", "TODO:", "TODO@", "HACK ", "HACK:" }; 
+        static readonly string[] TaskComments = { "TODO ", "TODO:", "TODO@", "HACK ", "HACK:" };
         static readonly string[] RainbowComments = { "+? " }; //シ  
 
+#if !YIELD_TAGS
         static readonly List<ITagSpan<ClassificationTag>> EmptyTags = new List<ITagSpan<ClassificationTag>>();
+#endif
 
 #pragma warning disable 67
         public event EventHandler<SnapshotSpanEventArgs> TagsChanged;
 #pragma warning restore 67
 
-        internal CommentTagger(IClassificationTypeRegistryService registry, ITagAggregator<IClassificationTag> aggregator)
+        internal CommentTagger(IClassificationTypeRegistryService registry, IBufferTagAggregatorFactoryService factory, ITextBuffer buffer)
         {
             _classifications = new string[] { Constants.ImportantComment, Constants.QuestionComment, Constants.WtfComment, Constants.RemovedComment, Constants.TaskComment, Constants.RainbowComment }
-                    .ToDictionary(GetClassification, s => new ClassificationTag(registry.GetClassificationType(s)));
+                .ToDictionary(GetClassification, s => new ClassificationTag(registry.GetClassificationType(s)));
 
             _htmlClassifications = new string[] { Constants.ImportantHtmlComment, Constants.QuestionHtmlComment, Constants.WtfComment, Constants.RemovedHtmlComment, Constants.TaskHtmlComment }
-                    .ToDictionary(GetClassification, s => new ClassificationTag(registry.GetClassificationType(s)));
+                .ToDictionary(GetClassification, s => new ClassificationTag(registry.GetClassificationType(s)));
 
             _xmlClassifications = new string[] { Constants.ImportantXmlComment, Constants.QuestionXmlComment, Constants.WtfComment, Constants.RemovedXmlComment, Constants.TaskXmlComment }
-                    .ToDictionary(GetClassification, s => new ClassificationTag(registry.GetClassificationType(s)));
+                .ToDictionary(GetClassification, s => new ClassificationTag(registry.GetClassificationType(s)));
 
-            _aggregator = aggregator;
+            var aggregator = factory.CreateTagAggregator<IClassificationTag>(buffer);
+            _aggregator = aggregator as IAccurateTagAggregator<IClassificationTag>;
         }
 
         static CommentTagger()
@@ -78,21 +82,7 @@ namespace CommentsPlus.CommentClassifier
 
         static bool IsEnabled()
         {
-            bool res = true;
-
-            try
-            {
-                using (var subKey = Registry.CurrentUser.OpenSubKey("Software\\CommentsPlus", false))
-                {
-                    int value = Convert.ToInt32(subKey.GetValue("EnableTags", 1));
-                    res = value != 0;
-                }
-            }
-            catch (Exception ex)
-            {
-                Trace.WriteLine("Failed to read registry: " + ex.Message, "CommentsPlus");
-            }
-
+            bool res = RegistryHelper.IsEnabled("EnableTags", true);
             return res;
         }
 
@@ -104,44 +94,68 @@ namespace CommentsPlus.CommentClassifier
         public IEnumerable<ITagSpan<ClassificationTag>> GetTags(NormalizedSnapshotSpanCollection spans)
         {
 #if DIAG_TIMING
-      var sw = Stopwatch.StartNew();
+            var sw = Stopwatch.StartNew();
 
-      //ToList seems to perform better than returning the iterator
-      var tags = GetTagsInternal(spans).AsList();
+            //ToList seems to perform better than returning the iterator
+            var tags = GetTagsInternal(spans).AsList();
 
-      sw.Stop();
-      if (sw.Elapsed > TimeSpan.FromMilliseconds(1))
-        Trace.WriteLine("GetTags took: " + sw.Elapsed, "CommentsPlus");
+            sw.Stop();
+            if (sw.Elapsed > TimeSpan.FromMilliseconds(1))
+                Trace.WriteLine("GetTags took: " + sw.Elapsed, "CommentsPlus");
 
-      return tags;
+            return tags;
 #else
             return GetTagsInternal(spans);
 #endif
         }
 
-        private IEnumerable<ITagSpan<ClassificationTag>> GetTagsInternal(NormalizedSnapshotSpanCollection spans)
+        private IEnumerable<ITagSpan<ClassificationTag>> GetTagsInternal(NormalizedSnapshotSpanCollection spans, CancellationToken? cancellation = default)
         {
             if (!_enabled || spans.Count == 0)
+#if YIELD_TAGS
+                yield break;
+#else
                 return EmptyTags;
+#endif
 
             ITextSnapshot snapshot = spans[0].Snapshot;
             var contentType = snapshot.TextBuffer.ContentType;
             if (!contentType.IsOfType("code"))
+#if YIELD_TAGS
+                yield break;
+#else
                 return EmptyTags;
+#endif
 
-            bool isMarkup = IsMarkup(contentType);
+            bool isMarkup = false;
 
             var lookup = _classifications;
             if (IsHtmlMarkup(contentType))
-                lookup = _htmlClassifications;
-            else if (IsXmlMarkup(contentType))
-                lookup = _xmlClassifications;
-
-            List<ITagSpan<ClassificationTag>> resultTags = null;
-
-            string previousCommentType = null;
-            foreach (var tagSpan in _aggregator.GetTags(spans))
             {
+                lookup = _htmlClassifications;
+                isMarkup = true;
+            }
+            else if (IsXmlMarkup(contentType))
+            {
+                lookup = _xmlClassifications;
+                isMarkup = true;
+            }
+
+#if !YIELD_TAGS
+            List<ITagSpan<ClassificationTag>> resultTags = null;
+#endif
+            string previousCommentType = null;
+
+            bool all = contentType.IsOfType("CSharp") || contentType.IsOfType("Basic");
+            var currentTagSpans = all ? _aggregator.GetAllTags(spans, cancellation ?? default) : _aggregator.GetTags(spans);
+            foreach (var tagSpan in currentTagSpans)
+            {
+                if (cancellation.HasValue && cancellation.Value.IsCancellationRequested)
+#if YIELD_TAGS
+                    yield break;
+#else
+                    break;
+#endif
                 // find spans that the language service has already classified as comments ...
                 string classificationName = tagSpan.Tag.ClassificationType.Classification;
                 if (!classificationName.Contains("comment", StringComparison.OrdinalIgnoreCase))
@@ -154,7 +168,7 @@ namespace CommentsPlus.CommentClassifier
                     var snapshotSpan = nssc[0];
 
                     string text = snapshotSpan.GetText();
-                    if (String.IsNullOrWhiteSpace(text))
+                    if (string.IsNullOrWhiteSpace(text))
                         continue;
 
                     string startCommentOnlyType = text.EqualsOneOf(Comments);
@@ -240,15 +254,21 @@ namespace CommentsPlus.CommentClassifier
                         var span = new SnapshotSpan(snapshotSpan.Snapshot, snapshotSpan.Start + matchLength, spanLength);
                         var outTagSpan = new TagSpan<ClassificationTag>(span, ctag);
 
+#if YIELD_TAGS
+                        yield return outTagSpan;
+#else
                         if (resultTags == null)
                             resultTags = new List<ITagSpan<ClassificationTag>>();
 
                         resultTags.Add(outTagSpan);
+#endif
                     }
                 }
             }
 
+#if !YIELD_TAGS
             return resultTags ?? EmptyTags;
+#endif
         }
 
         private static bool FixTaskComment(string text, int startIndex, ref string match)
@@ -302,13 +322,6 @@ namespace CommentsPlus.CommentClassifier
                 return Classification.Rainbow;
 
             throw new ArgumentException("Unknown classification type");
-        }
-
-        private bool IsMarkup(IContentType contentType)
-        {
-            bool res = IsHtmlMarkup(contentType) || IsXmlMarkup(contentType);
-
-            return res;
         }
 
         private static bool IsHtmlMarkup(IContentType contentType)
