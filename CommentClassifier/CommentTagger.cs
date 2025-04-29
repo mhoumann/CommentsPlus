@@ -1,5 +1,4 @@
 ﻿//#define DIAG_TIMING
-#define YIELD_TAGS
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
@@ -25,27 +24,39 @@ namespace CommentsPlus.CommentClassifier
         internal IClassificationTypeRegistryService ClassificationRegistry = null;
 
         [Import]
-        internal IBufferTagAggregatorFactoryService TagAggregatorFactory = null;
+        internal IBufferTagAggregatorFactoryService BufferTagAggregatorFactory = null;
+
+        [Import]
+        internal IViewTagAggregatorFactoryService ViewTagAggregatorFactory = null;
 
         public ITagger<T> CreateTagger<T>(ITextView textView, ITextBuffer buffer) where T : ITag
         {
-            return new CommentTagger(ClassificationRegistry, TagAggregatorFactory, buffer) as ITagger<T>;
+            return textView.Properties.GetOrCreateSingletonProperty(() => new CommentTagger(ClassificationRegistry, ViewTagAggregatorFactory, BufferTagAggregatorFactory, textView, buffer) as ITagger<T>);
         }
     }
 
-    sealed class CommentTagger : ITagger<ClassificationTag>, IDisposable
+    sealed class CommentTagger : ITagger<ClassificationTag>
     {
         readonly Dictionary<Classification, ClassificationTag> _classifications;
         readonly Dictionary<Classification, ClassificationTag> _htmlClassifications;
         readonly Dictionary<Classification, ClassificationTag> _xmlClassifications;
 
-        readonly ITagAggregator<IClassificationTag> _aggregator;
+        readonly ITextView _textView;
+        readonly ITextBuffer _buffer;
+        readonly IViewTagAggregatorFactoryService _viewTagAggregatorFactory;
+        readonly IBufferTagAggregatorFactoryService _bufferTagAggregatorFactory;
+
+        readonly List<ITagSpan<ClassificationTag>> _resultTags = new List<ITagSpan<ClassificationTag>>();
 
         readonly long _instance = ++instanceCounter;
+
+        ITagAggregator<IClassificationTag> _aggregator;
+        bool _working = false;
+
         static long instanceCounter = 0;
 
-        static bool _enabled;
-        static bool _useRoslynFix = true;
+        static readonly bool IsEnabled;
+        static readonly bool UseBufferTagAggregator = false;
 
         static readonly string[] Comments = { "//", "'", "#", "<!--"/*, "/*"*/ };
 
@@ -56,10 +67,6 @@ namespace CommentsPlus.CommentClassifier
         static readonly string[] TaskComments = { "TODO ", "TODO:", "TODO@", "HACK ", "HACK:" };
         static readonly string[] RainbowComments = { "+? " }; //シ  
 
-#if !YIELD_TAGS
-        static IEnumerable<ITagSpan<ClassificationTag>> EmptyTags => Enumerable.Empty<ITagSpan<ClassificationTag>>();
-#endif
-
 #if DIAG_TIMING
         long TimingCount = 0;
 #endif
@@ -68,7 +75,7 @@ namespace CommentsPlus.CommentClassifier
         public event EventHandler<SnapshotSpanEventArgs> TagsChanged;
 #pragma warning restore 67
 
-        internal CommentTagger(IClassificationTypeRegistryService registry, IBufferTagAggregatorFactoryService factory, ITextBuffer buffer)
+        internal CommentTagger(IClassificationTypeRegistryService registry, IViewTagAggregatorFactoryService viewAggrFactory, IBufferTagAggregatorFactoryService factory, ITextView textView, ITextBuffer buffer)
         {
             _classifications = new string[] { Constants.ImportantComment, Constants.QuestionComment, Constants.WtfComment, Constants.RemovedComment, Constants.TaskComment, Constants.RainbowComment }
                 .ToDictionary(GetClassification, s => new ClassificationTag(registry.GetClassificationType(s)));
@@ -79,18 +86,16 @@ namespace CommentsPlus.CommentClassifier
             _xmlClassifications = new string[] { Constants.ImportantXmlComment, Constants.QuestionXmlComment, Constants.WtfComment, Constants.RemovedXmlComment, Constants.TaskXmlComment }
                 .ToDictionary(GetClassification, s => new ClassificationTag(registry.GetClassificationType(s)));
 
-            _aggregator = factory.CreateTagAggregator<IClassificationTag>(buffer);
+            _textView = textView;
+            _buffer = buffer;
+            _viewTagAggregatorFactory = viewAggrFactory;
+            _bufferTagAggregatorFactory = factory;
         }
 
         static CommentTagger()
         {
-            _enabled = RegistryHelper.IsEnabled("EnableTags", true);
-            _useRoslynFix = RegistryHelper.IsEnabled("RoslynFix", true);
-        }
-
-        public void Dispose()
-        {
-            _aggregator.Dispose();
+            IsEnabled = RegistryHelper.IsEnabled("EnableTags", true);
+            UseBufferTagAggregator = RegistryHelper.IsEnabled("UseOldTagging", false);
         }
 
         /// <summary>
@@ -100,30 +105,44 @@ namespace CommentsPlus.CommentClassifier
         /// <returns>A <see cref="Microsoft.VisualStudio.Text.Tagging.ITagSpan{T}"/> for each tag.</returns>
         public IEnumerable<ITagSpan<ClassificationTag>> GetTags(NormalizedSnapshotSpanCollection spans)
         {
-            return GetTagsInternal(spans);
+            if (_aggregator == null)
+            {
+                var contentType = _buffer.ContentType;
+                bool isRoslyn = contentType.IsOfType("CSharp") || contentType.IsOfType("Basic");
+                bool useViewTagAggregator = isRoslyn || !UseBufferTagAggregator;
+
+                if (_viewTagAggregatorFactory != null && useViewTagAggregator)
+                    _aggregator = _viewTagAggregatorFactory.CreateTagAggregator<IClassificationTag>(_textView);
+                else
+                    _aggregator = _bufferTagAggregatorFactory.CreateTagAggregator<IClassificationTag>(_buffer);
+            }
+
+            if (_working)
+                return Enumerable.Empty<ITagSpan<ClassificationTag>>();
+
+            _working = true;
+            try
+            {
+                return GetTagsInternal(spans);
+            }
+            finally
+            {
+                _working = false;
+            }
         }
 
         private IEnumerable<ITagSpan<ClassificationTag>> GetTagsInternal(NormalizedSnapshotSpanCollection spans, CancellationToken? cancellation = default)
         {
-            if (!_enabled || spans.Count == 0)
-#if YIELD_TAGS
-                yield break;
-#else
-                return EmptyTags;
-#endif
+            if (!IsEnabled || spans.Count == 0)
+                return Enumerable.Empty<ITagSpan<ClassificationTag>>();
 
 #if DIAG_TIMING
             var sw = Stopwatch.StartNew();
 #endif
-
             ITextSnapshot snapshot = spans[0].Snapshot;
             var contentType = snapshot.TextBuffer.ContentType;
             if (!contentType.IsOfType("code"))
-#if YIELD_TAGS
-                yield break;
-#else
-                return EmptyTags;
-#endif
+                return Enumerable.Empty<ITagSpan<ClassificationTag>>();
 
             bool isMarkup = false;
 
@@ -139,27 +158,24 @@ namespace CommentsPlus.CommentClassifier
                 isMarkup = true;
             }
 
-#if !YIELD_TAGS
-            List<ITagSpan<ClassificationTag>> resultTags = null;
-#endif
+            _resultTags.Clear();
             string previousCommentType = null;
 
+#if USE_ACCURATE_TAGGER
             bool isRoslyn = contentType.IsOfType("CSharp") || contentType.IsOfType("Basic");
-            bool all = isRoslyn && _useRoslynFix;
-
+            bool all = isRoslyn;
             // Use IAccurateTagAggregator<T>.GetAllTags for C# and VB only - seems to have serious perf issues with some other languages (.py, .js)
+            // NOTE: Perf is not very good for editor even for C#/VB
             var currentTagSpans = (all && _aggregator is IAccurateTagAggregator<IClassificationTag> accAggregator)
                 ? accAggregator.GetAllTags(spans, cancellation ?? default)
                 : _aggregator.GetTags(spans);
-
+#else
+            var currentTagSpans = _aggregator.GetTags(spans);
+#endif
             foreach (var tagSpan in currentTagSpans)
             {
                 if (cancellation.HasValue && cancellation.Value.IsCancellationRequested)
-#if YIELD_TAGS
-                    yield break;
-#else
                     break;
-#endif
 
                 // find spans that the language service has already classified as comments ...
                 string classificationName = tagSpan.Tag.ClassificationType.Classification;
@@ -259,14 +275,7 @@ namespace CommentsPlus.CommentClassifier
                         var span = new SnapshotSpan(snapshotSpan.Snapshot, snapshotSpan.Start + matchLength, spanLength);
                         var outTagSpan = new TagSpan<ClassificationTag>(span, ctag);
 
-#if YIELD_TAGS
-                        yield return outTagSpan;
-#else
-                        if (resultTags == null)
-                            resultTags = new List<ITagSpan<ClassificationTag>>();
-
-                        resultTags.Add(outTagSpan);
-#endif
+                        _resultTags.Add(outTagSpan);
                     }
                 }
             }
@@ -276,10 +285,7 @@ namespace CommentsPlus.CommentClassifier
             if (sw.Elapsed > TimeSpan.FromMilliseconds(10) || (TimingCount++ == 1 || TimingCount % 10 == 0))
                 Trace.WriteLine($"GetTags ({_instance}) time ({TimingCount}): {sw.Elapsed}", "CommentsPlus");
 #endif
-
-#if !YIELD_TAGS
-            return resultTags ?? EmptyTags;
-#endif
+            return _resultTags;
         }
 
         private static bool FixTaskComment(string text, int startIndex, ref string match)
