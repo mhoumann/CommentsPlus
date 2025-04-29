@@ -1,5 +1,5 @@
 ﻿//#define DIAG_TIMING
-//#define YIELD_TAGS
+#define YIELD_TAGS
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
@@ -33,7 +33,7 @@ namespace CommentsPlus.CommentClassifier
         }
     }
 
-    class CommentTagger : ITagger<ClassificationTag>
+    sealed class CommentTagger : ITagger<ClassificationTag>, IDisposable
     {
         readonly Dictionary<Classification, ClassificationTag> _classifications;
         readonly Dictionary<Classification, ClassificationTag> _htmlClassifications;
@@ -41,7 +41,11 @@ namespace CommentsPlus.CommentClassifier
 
         readonly ITagAggregator<IClassificationTag> _aggregator;
 
+        readonly long _instance = ++instanceCounter;
+        static long instanceCounter = 0;
+
         static bool _enabled;
+        static bool _useRoslynFix = true;
 
         static readonly string[] Comments = { "//", "'", "#", "<!--"/*, "/*"*/ };
 
@@ -53,7 +57,11 @@ namespace CommentsPlus.CommentClassifier
         static readonly string[] RainbowComments = { "+? " }; //シ  
 
 #if !YIELD_TAGS
-        static readonly List<ITagSpan<ClassificationTag>> EmptyTags = new List<ITagSpan<ClassificationTag>>();
+        static IEnumerable<ITagSpan<ClassificationTag>> EmptyTags => Enumerable.Empty<ITagSpan<ClassificationTag>>();
+#endif
+
+#if DIAG_TIMING
+        long TimingCount = 0;
 #endif
 
 #pragma warning disable 67
@@ -76,13 +84,13 @@ namespace CommentsPlus.CommentClassifier
 
         static CommentTagger()
         {
-            _enabled = IsEnabled();
+            _enabled = RegistryHelper.IsEnabled("EnableTags", true);
+            _useRoslynFix = RegistryHelper.IsEnabled("RoslynFix", true);
         }
 
-        static bool IsEnabled()
+        public void Dispose()
         {
-            bool res = RegistryHelper.IsEnabled("EnableTags", true);
-            return res;
+            _aggregator.Dispose();
         }
 
         /// <summary>
@@ -92,20 +100,7 @@ namespace CommentsPlus.CommentClassifier
         /// <returns>A <see cref="Microsoft.VisualStudio.Text.Tagging.ITagSpan{T}"/> for each tag.</returns>
         public IEnumerable<ITagSpan<ClassificationTag>> GetTags(NormalizedSnapshotSpanCollection spans)
         {
-#if DIAG_TIMING
-            var sw = Stopwatch.StartNew();
-
-            //ToList seems to perform better than returning the iterator
-            var tags = GetTagsInternal(spans).AsList();
-
-            sw.Stop();
-            if (sw.Elapsed > TimeSpan.FromMilliseconds(1))
-                Trace.WriteLine("GetTags took: " + sw.Elapsed, "CommentsPlus");
-
-            return tags;
-#else
             return GetTagsInternal(spans);
-#endif
         }
 
         private IEnumerable<ITagSpan<ClassificationTag>> GetTagsInternal(NormalizedSnapshotSpanCollection spans, CancellationToken? cancellation = default)
@@ -115,6 +110,10 @@ namespace CommentsPlus.CommentClassifier
                 yield break;
 #else
                 return EmptyTags;
+#endif
+
+#if DIAG_TIMING
+            var sw = Stopwatch.StartNew();
 #endif
 
             ITextSnapshot snapshot = spans[0].Snapshot;
@@ -145,11 +144,12 @@ namespace CommentsPlus.CommentClassifier
 #endif
             string previousCommentType = null;
 
-            bool all = contentType.IsOfType("CSharp") || contentType.IsOfType("Basic");
+            bool isRoslyn = contentType.IsOfType("CSharp") || contentType.IsOfType("Basic");
+            bool all = isRoslyn && _useRoslynFix;
 
             // Use IAccurateTagAggregator<T>.GetAllTags for C# and VB only - seems to have serious perf issues with some other languages (.py, .js)
-            var currentTagSpans = (all && _aggregator is IAccurateTagAggregator<IClassificationTag> accAggregator) 
-                ? accAggregator.GetAllTags(spans, cancellation ?? default) 
+            var currentTagSpans = (all && _aggregator is IAccurateTagAggregator<IClassificationTag> accAggregator)
+                ? accAggregator.GetAllTags(spans, cancellation ?? default)
                 : _aggregator.GetTags(spans);
 
             foreach (var tagSpan in currentTagSpans)
@@ -160,6 +160,7 @@ namespace CommentsPlus.CommentClassifier
 #else
                     break;
 #endif
+
                 // find spans that the language service has already classified as comments ...
                 string classificationName = tagSpan.Tag.ClassificationType.Classification;
                 if (!classificationName.Contains("comment", StringComparison.OrdinalIgnoreCase))
@@ -269,6 +270,12 @@ namespace CommentsPlus.CommentClassifier
                     }
                 }
             }
+
+#if DIAG_TIMING
+            sw.Stop();
+            if (sw.Elapsed > TimeSpan.FromMilliseconds(10) || (TimingCount++ == 1 || TimingCount % 10 == 0))
+                Trace.WriteLine($"GetTags ({_instance}) time ({TimingCount}): {sw.Elapsed}", "CommentsPlus");
+#endif
 
 #if !YIELD_TAGS
             return resultTags ?? EmptyTags;
