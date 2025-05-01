@@ -12,7 +12,7 @@ Based in part on code by Noah Richards and Tomas Restrepo.
 Special Comments:
 -----------------
 
-```C#
+```csharp
 //! Important - formatted as bold.
 //? Question - colored red.
 //x Removed - formatted as strikeout.
@@ -27,15 +27,15 @@ Supported File Types
 
 Should work with all or most VS supported source code file types.
 
-Tested with: .cs, .vb, .h/.cpp, .py, .js, .ts, .ps1, .html, .xml, .xaml,
+Tested with: .cs, .vb, .h/.cpp, .py, .js, .ts, .ps1, .html, .xml, .xaml, .yml,
 
 Settings
 --------
 
 The formatting can be changed in the Options dialog under Environment > Fonts and Colors > Text Editor.
 
-Italics:
------
+Italics
+-------
 
 **NOTE:** *Italics* support is now disabled in this extension by default, since it is supported natively in VS 2022 from v17.10 🥳 🎉
 

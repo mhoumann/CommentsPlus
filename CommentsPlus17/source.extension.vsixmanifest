@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="CommentsPlus17.f674b167-08a9-4d6d-b4b0-c4d28d1da73c" Version="2.14.0" Language="en-US" Publisher="mhoumann" />
+        <Identity Id="CommentsPlus17.f674b167-08a9-4d6d-b4b0-c4d28d1da73c" Version="2.14.1" Language="en-US" Publisher="mhoumann" />
         <DisplayName>CommentsPlus</DisplayName>
-        <Description xml:space="preserve">Comments in italics, extra formatting for comments starting with: !, ?, x, e.g., //!</Description>
+        <Description xml:space="preserve">Comments fomatting: Extra formatting for code comments starting with: !, ?, x, e.g., //!
+Optional: Comments in italics.</Description>
         <MoreInfo>https://github.com/mhoumann/CommentsPlus</MoreInfo>
         <License>ms-pl.txt</License>
         <ReleaseNotes>readme.rtf</ReleaseNotes>
