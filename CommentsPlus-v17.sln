@@ -18,6 +18,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{F3C5
 		Samples\HTMLPage1.html = Samples\HTMLPage1.html
 		Samples\python_class1.py = Samples\python_class1.py
 		Samples\Sample2.ts = Samples\Sample2.ts
+		Samples\SampleClass.cs = Samples\SampleClass.cs
 		Samples\samplepage.xaml = Samples\samplepage.xaml
 		Samples\samplescript.ps1 = Samples\samplescript.ps1
 		Samples\Script2.js = Samples\Script2.js
